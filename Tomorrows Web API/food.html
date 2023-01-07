@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+  <link rel = "stylesheet" href = "food.css">
+  <title>Find Meal For Your Ingredients</title>
+
+</head>
+<body>
+
+  <div class = "cont">
+    <div class = "ml-wrap">
+      <div class = "ml-search">
+        <h2 class = "title">EASY COOK</h2>
+        <blockquote>You don't need a silver fork to eat food<br>
+          <cite>- Paul Prudhomme</cite>
+        </blockquote>
+
+        <div class = "ml-searchbox">
+          <input type = "text" class = "ctrl-search" placeholder="Enter an ingredient" id = "search-input">
+          <button type = "submit" class = "srch-btn1 btn" id = "search-btn">
+            <i class = "fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+
+      <div class = "ml-rslt">
+        <h2 class = "title">Searched Results:</h2>
+        <div id= "meal">
+          <!-- meal item -->
+          <!-- <div class = "ml-itm">
+            <div class = "ml-image">
+              <img src = "food.jpg" alt = "food">
+            </div>
+            <div class = "ml-nam">
+              <h3>Potato Chips</h3>
+              <a href = "#" class = "recipe-btn">Get Recipe</a>
+            </div>
+          </div> -->
+          <!-- end of meal item -->
+        </div>
+      </div>
+
+
+      <div class = "ml-deta">
+        <!-- recipe close btn -->
+        <button type = "button" class = "btn recipe-close-btn" id = "recipe-close-btn">
+          <i class = "fas fa-times"></i>
+        </button>
+
+        <!-- meal content -->
+        <div class = "meal-details-content">
+          <!-- <h2 class = "recp-title">Meals Name Here</h2>
+          <p class = "recp-category">Category Name</p>
+          <div class = "recp-instruct">
+            <h3>Instructions:</h3>
+            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quo blanditiis quis accusantium natus! Porro, reiciendis maiores molestiae distinctio veniam ratione ex provident ipsa, soluta suscipit quam eos velit autem iste!</p>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet aliquam voluptatibus ad obcaecati magnam, esse numquam nisi ut adipisci in?</p>
+          </div>
+          <div class = "recp-meal-img">
+            <img src = "food.jpg" alt = "">
+          </div>
+          <div class = "recp-link">
+            <a href = "#" target = "_blank">Watch Video</a>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!--script part-->
+<script>
+  const searchBtn = document.getElementById('search-btn');
+  const mealList = document.getElementById('meal');
+  const mealDetailsContent = document.querySelector('.meal-details-content');
+  const recipeCloseBtn = document.getElementById('recipe-close-btn');
+  
+  // event listeners
+  searchBtn.addEventListener('click', getMealList);
+  mealList.addEventListener('click', getMealRecipe);
+  recipeCloseBtn.addEventListener('click', () => {
+      mealDetailsContent.parentElement.classList.remove('showRecipe');
+  });
+  
+  
+  // display the list of meals that is related to that specific ingredient
+  function getMealList(){
+      let searchInputTxt = document.getElementById('search-input').value.trim();
+      fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${searchInputTxt}`)
+      .then(response => response.json())
+      .then(data => {
+          let html = "";
+          if(data.meals){
+              data.meals.forEach(meal => {
+                  html += `
+                      <div class = "ml-itm" data-id = "${meal.idMeal}">
+                          <div class = "ml-image">
+                              <img src = "${meal.strMealThumb}" alt = "food">
+                          </div>
+                          <div class = "ml-nam">
+                              <h3>${meal.strMeal}</h3>
+                              <a href = "#" class = "recipe-btn">Get Recipe</a>
+                          </div>
+                      </div>
+                  `;
+              });
+              mealList.classList.remove('notFound');
+          } else{
+              html = "Sorry, we didn't find any meal!";
+              mealList.classList.add('notFound');
+          }
+  
+          mealList.innerHTML = html;
+      });
+  }
+  
+  
+  // for the recipe of the meal user selected
+  function getMealRecipe(e){
+      e.preventDefault();
+      if(e.target.classList.contains('recipe-btn')){
+          let mealItem = e.target.parentElement.parentElement;
+          fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealItem.dataset.id}`)
+          .then(response => response.json())
+          .then(data => mealRecipeModal(data.meals));
+      }
+  }
+  
+  // create a modal
+  function mealRecipeModal(meal){
+      console.log(meal);
+      meal = meal[0];
+      let html = `
+          <h2 class = "recp-title">${meal.strMeal}</h2>
+          <p class = "recp-category">${meal.strCategory}</p>
+          <div class = "recp-instruct">
+              <h3>Instructions:</h3>
+              <p>${meal.strInstructions}</p>
+          </div>
+          <div class = "recp-meal-img">
+              <img src = "${meal.strMealThumb}" alt = "">
+          </div>
+          <div class = "recp-link">
+              <a href = "${meal.strYoutube}" target = "_blank">Watch Video</a>
+          </div>
+      `;
+      mealDetailsContent.innerHTML = html;
+      mealDetailsContent.parentElement.classList.add('showRecipe');
+  }
+
+
+</script>
+
+
+
+
+</body>
+</html>
